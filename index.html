@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+    <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
+  </head>
+  <body>
+    <h2>Firebase Example</h2>
+    <input type='text' id='messageInput'  placeholder='Type a message...'>
+    <h2>Results</h2>
+    <input type='text' id='results'>
+    <button type="button" onclick="savedata()">Click Me!</button>
+    <script>
+    var messagesRef = new Firebase('https://brilliant-fire-3159.firebaseio.com/users');
+
+    // For user authentication
+    function authHandler(error, authData) {
+      if (error) {
+        console.log("Login Failed!", error);
+      } else {
+        console.log("Authenticated successfully with payload:", authData);
+      }
+    }
+
+    // Or with an email/password combination
+    messagesRef.authWithPassword({
+      email    : 'bobtony@firebase.com',
+      password : 'correcthorsebatterystaple'
+    }, authHandler);
+
+    //var messageField = $('#');
+    var messageField = document.getElementById('messageInput');
+    var messageResults = document.getElementById('results');
+
+    function savedata(){
+      var message = messageField.value;
+
+      // SAVE DATA TO FIREBASE AND EMPTY FIELD
+      console.log(message);
+      messagesRef.push({fieldName:'messageField', text:message});
+      messageField.value = '';
+    }
+
+
+    // Read the data out
+    messagesRef.limitToLast(10).on('child_added', function (snapshot) {
+      //GET DATA
+      console.time('Timestart');
+      var data = snapshot.val();
+      var message = data.text;
+      console.timeEnd('Timestart');
+      console.log(message);
+
+      //CREATE ELEMENTS MESSAGE & SANITIZE TEXT
+      messageResults.value += " " + message;
+
+    });
+    </script>
+  </body>
+</html>
