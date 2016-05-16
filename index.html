@@ -13,6 +13,7 @@
     <button type="button" onclick="savedata()">Click Me!</button>
     <script>
     var messagesRef = new Firebase('https://brilliant-fire-3159.firebaseio.com/users');
+    var isNewUser = true;
 
     // For user authentication
     function authHandler(error, authData) {
@@ -23,11 +24,39 @@
       }
     }
 
+     function getName(authData) {
+      switch(authData.provider) {
+         case 'password':
+           console.log(authData.password.email.replace(/@.*/, ''));
+           return authData.password.email.replace(/@.*/, '');
+         case 'twitter':
+           console.log(authData.twitter.displayName);
+           return authData.twitter.displayName;
+         case 'facebook':
+           console.log(authData.facebook.displayName);
+           return authData.facebook.displayName;
+      }
+    }
+
     // Or with an email/password combination
     messagesRef.authWithPassword({
-      email    : 'bobtony@firebase.com',
+      email    : 'bobtony@firebdddase.com',
       password : 'correcthorsebatterystaple'
     }, authHandler);
+
+    messagesRef.onAuth(function(authData) {
+    if (authData && isNewUser) {
+      console.log('authData');
+      // save the user's profile into the database so we can list users,
+      // use them in Security and Firebase Rules, and show profiles
+      messagesRef.child("users").child(authData.uid).set({
+        provider: authData.provider,
+        name: getName(authData)
+      });
+    }
+  });
+
+
 
     //var messageField = $('#');
     var messageField = document.getElementById('messageInput');
