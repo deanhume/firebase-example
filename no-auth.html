@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+    <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
+  </head>
+  <body>
+    <h2>Firebase Example</h2>
+    <input type='text' id='messageInput'  placeholder='Enter your data here...'>
+    <button type="button" onclick="savedata()">Save Data</button>
+    <br><br><br>
+    <hr>
+    <h2>Results</h2>
+    <textarea rows="10" cols="50" id="results"></textarea>
+    <script>
+    var messagesRef = new Firebase('https://brilliant-fire-3159.firebaseio.com');
+    
+    var messageField = document.getElementById('messageInput');
+    var messageResults = document.getElementById('results');
+
+    // Save data to firebase
+    function savedata(){
+      var message = messageField.value;
+
+      messagesRef.push({fieldName:'messageField', text:message});
+      messageField.value = '';
+    }
+
+    // Update results when data is added
+    messagesRef.limitToLast(10).on('child_added', function (snapshot) {
+        var data = snapshot.val();
+        console.log(snapshot.val());
+        var message = data.text;
+
+        if (message != undefined)
+        {
+          messageResults.value += '\n' + message;
+        }
+    });
+    </script>
+  </body>
+</html>
