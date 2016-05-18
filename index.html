@@ -6,84 +6,59 @@
     <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
   </head>
   <body>
+    <img id="gravatar" />
     <h2>Firebase Example</h2>
-    <input type='text' id='messageInput'  placeholder='Type a message...'>
+    <input type='text' id='messageInput'  placeholder='Enter your data here...'>
+    <button type="button" onclick="savedata()">Save Data</button>
+    <br><br><br>
+    <hr>
     <h2>Results</h2>
-    <input type='text' id='results'>
-    <button type="button" onclick="savedata()">Click Me!</button>
+    <textarea rows="10" cols="50" id="results"></textarea>
     <script>
     var messagesRef = new Firebase('https://brilliant-fire-3159.firebaseio.com/users');
-    var isNewUser = true;
+    var userId = 0;
 
     // For user authentication
     function authHandler(error, authData) {
       if (error) {
-        console.log("Login Failed!", error);
+        console.log('Login Failed!', error);
       } else {
-        console.log("Authenticated successfully with payload:", authData);
+        // Set the gravatar
+        document.getElementById('gravatar').src = authData.password.profileImageURL;
       }
     }
 
-     function getName(authData) {
-      switch(authData.provider) {
-         case 'password':
-           console.log(authData.password.email.replace(/@.*/, ''));
-           return authData.password.email.replace(/@.*/, '');
-         case 'twitter':
-           console.log(authData.twitter.displayName);
-           return authData.twitter.displayName;
-         case 'facebook':
-           console.log(authData.facebook.displayName);
-           return authData.facebook.displayName;
-      }
-    }
-
-    // Or with an email/password combination
+    // Log the user in with an email combination
     messagesRef.authWithPassword({
-      email    : 'bobtony@firebdddase.com',
-      password : 'correcthorsebatterystaple'
+      email    : 'hello@deanhume.com',
+      password : 'dean123'
     }, authHandler);
 
     messagesRef.onAuth(function(authData) {
-    if (authData && isNewUser) {
-      console.log('authData');
-      // save the user's profile into the database so we can list users,
-      // use them in Security and Firebase Rules, and show profiles
-      messagesRef.child("users").child(authData.uid).set({
-        provider: authData.provider,
-        name: getName(authData)
-      });
-    }
-  });
+       userId = authData.uid;
+    });
 
-
-
-    //var messageField = $('#');
     var messageField = document.getElementById('messageInput');
     var messageResults = document.getElementById('results');
 
+    // Save data to firebase
     function savedata(){
       var message = messageField.value;
 
-      // SAVE DATA TO FIREBASE AND EMPTY FIELD
-      console.log(message);
-      messagesRef.push({fieldName:'messageField', text:message});
+      messagesRef.child('users').child(userId).push({fieldName:'messageField', text:message});
       messageField.value = '';
     }
 
+    // Update results when data is added
+    messagesRef.child('users').child(userId).limitToLast(10).on('child_added', function (snapshot) {
+        var data = snapshot.val();
+        console.log(snapshot.val());
+        var message = data.text;
 
-    // Read the data out
-    messagesRef.limitToLast(10).on('child_added', function (snapshot) {
-      //GET DATA
-      console.time('Timestart');
-      var data = snapshot.val();
-      var message = data.text;
-      console.timeEnd('Timestart');
-      console.log(message);
-
-      //CREATE ELEMENTS MESSAGE & SANITIZE TEXT
-      messageResults.value += " " + message;
-
+        if (message != undefined)
+        {
+          messageResults.value += '\n' + message;
+        }
     });
     </script>
   </body>
